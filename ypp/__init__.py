@@ -22,6 +22,15 @@ from process import STR, YamlPreProcessor
 sys.path = saved_path
 del saved_path
 
+class __meta__:
+  name = 'ypplib'
+  version = VERSION
+  author = 'A Liu Ly'
+  author_email = 'alejandrol@t-systems.com'
+  description = 'Yaml Pre-Processor library'
+  url = 'https://github.com/aliuly/ypplib'
+  license = 'MIT'
+
 default_vars = dict()
 
 def init(config:list[str] = [], include:list[str] = [], define:list[str] = [], app_defaults:dict[str] = {}, env_prefix:str = '') -> YamlPreProcessor:

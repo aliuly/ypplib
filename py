@@ -10,4 +10,8 @@ venv="$mydir/.venv"
 sh "$mydir/setup.sh"
 . "$venv"/bin/activate
 
-exec python3 "$@"
+if type "$1" >/dev/null 2>&1 ; then
+  exec "$@"
+else
+  exec python3 "$@"
+fi
