@@ -14,7 +14,6 @@ import os
 import sys
 from inspect import getsourcefile
 
-
 DOCS_SOURCE_DIR = os.path.dirname(os.path.abspath(getsourcefile(lambda: 0)))
 DOCS_DIR = os.path.dirname(DOCS_SOURCE_DIR)
 REPO_DIR = os.path.dirname(DOCS_DIR)
@@ -41,7 +40,7 @@ version = ".".join(release.split(".")[0:2])
 # ones.
 extensions = [
                'sphinxarg.ext',   # argparse https://sphinx-argparse.readthedocs.io/en/stable/index.html
-               # ~ 'myst_parser',     # Markdown support
+               'myst_parser',     # Markdown support
                'autodoc2',        # Automatic doc generation
               ]
 myst_enable_extensions = [

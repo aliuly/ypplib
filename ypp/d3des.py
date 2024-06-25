@@ -5,8 +5,8 @@ VNC compatible DES implementation
 This module was retreived on 2021-12-15
 from `d3des.py <https://github.com/matthayes/vnc2flv/blob/master/vnc2flv/d3des.py>`_.
 
-d3des.py - DES implementation
-=============================
+## d3des.py - DES implementation
+
 
 Copyright (c) 2009 by Yusuke Shinyama
 
@@ -22,8 +22,8 @@ written in C), but if there's any problem, let me know.
 
 Yusuke Shinyama (yusuke at cs dot nyu dot edu)
 
-D3DES (V5.09)
-=============
+## D3DES (V5.09)
+
 
 A portable, public domain, version of the Data Encryption Standard.
 
@@ -382,10 +382,10 @@ import base64
 def encrypt(clear):
   '''
   VNC compatible encryption
-  
+
   :params str clear: clear text password
   :returns str: encrypted password
-  
+
   Encrypts a password using a VNC compatible format.
   '''
   clear = (bytes(clear,encoding='raw_unicode_escape') + b'\x00' * 8)[:8]
@@ -414,6 +414,6 @@ if __name__ == '__main__':
   ctext = base64.b64encode(b'\xd7\x9b\x9d\xc3\xd0\x67\x93\xfb').decode('ascii')
 
   enc = encrypt(passpadd)
-  
+
   ic([ctext,enc])
 

@@ -99,8 +99,10 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     if var_expand: value = self.expand_vars(value)
     self.ppv[key] = value
 
-  def register(self, directive:str, callback:typing.Callable, expand_vars:bool = True) -> None:
+  def register_cb(self, directive:str, callback:typing.Callable, expand_vars:bool = True) -> None:
     self.cmds[directive] = YppDirective(callback, expand_vars)
+  def register_macro(self, macro:str, callback:typing.Callable, expand_vars:bool = True) -> None:
+    self.macros[macro] = YppDirective(callback, expand_vars)
 
   def cb_error(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
     yppi.msg(args)

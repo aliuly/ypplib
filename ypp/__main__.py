@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-''' YAML pre-processor command
+''' YAML pre-processor command line interface
 
 If used on the command line, it acts as a pre-processor reading
 YAML files with pre-processor directives, and outputs
@@ -21,7 +21,8 @@ try:
 except ImportError:  # Graceful fallback if IceCream isn't installed.
   ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+if '__file__' in globals():
+  sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import ypp
 
 def cmd_cli():
@@ -42,6 +43,15 @@ def cmd_cli():
   return cli
 
 def load_yaml(text:str|typing.TextIO) -> any:
+  '''Utility function
+
+  :param text: YAML document to load
+  :returns: structure defined by YAML document
+
+  This is a simple utility function that catches `ParserError`
+  exceptions and displays them on-screen.
+  '''
+
   try:
     res = yaml.safe_load(text)
   except yaml.parser.ParserError as err:
@@ -83,7 +93,7 @@ if __name__ == '__main__':
       if args.json:
         outfp.write(json.dumps(res))
       else:
-        outfp.write(yaml.dump(res))      
+        outfp.write(yaml.dump(res))
     else:
       for input_file in args.file:
         with open(input_file, 'r') as fp:

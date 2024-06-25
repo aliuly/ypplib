@@ -8,7 +8,7 @@ reqs=requirements.txt
 if [ -d "$venv" ] ; then
   (
     [ x"$(cat "$venv/.realpath")" !=  x"$(readlink -f "$venv")" ] \
-    || ! diff -U 1 "$venv/.$reqs" "$mydir/$reqs"
+    || ! diff -U 0 --color "$venv/.$reqs" "$mydir/$reqs"
   ) && rm -rf "$venv"
 fi
 if [ ! -d "$venv" ] ; then

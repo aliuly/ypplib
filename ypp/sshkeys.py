@@ -15,8 +15,11 @@ except ImportError:
 import ipp
 
 DEF_KEYLEN = 4096
+'''Default key length'''
 PUB = 1
+'''Return public keys'''
 PRIV = 2
+'''Return private keys'''
 
 
 def ssh_key_gen(keysz: int = DEF_KEYLEN):
@@ -43,14 +46,14 @@ def ssh_key_gen(keysz: int = DEF_KEYLEN):
 
 def gen(key_store:str, key_id:str, mode:int = PUB, key_sz:int = DEF_KEYLEN, comment:str|None = None):
   '''Return a public/private key pair
-  
+
   :param str key_store: directory path to keys
   :param str key_id: name of the key
   :param str comment: Key comment (defaults to key_id)
   :param int mode: mode to use, either PRIV or PUB
   :param int key_sz: default key length
   :returns str: key text
-  
+
   Will generate keys if they do not exist.  Generated keys are stored
   in the key_store directory with name key_id and key_id.pub.
   '''
@@ -89,7 +92,7 @@ def gen(key_store:str, key_id:str, mode:int = PUB, key_sz:int = DEF_KEYLEN, comm
 
 def macro_sshkey(yppi:ipp.iYamlPreProcessor, args:str) -> str:
   '''SSH Key pair generator
-  
+
   :param yppi: YamlPreProcessor instance
   :param args: additional arguments
   :returns: generated string
@@ -99,7 +102,7 @@ def macro_sshkey(yppi:ipp.iYamlPreProcessor, args:str) -> str:
   secret = None
   keytype = PUB
   keylen = DEF_KEYLEN
-  
+
   for opt in args.split(':'):
     opt = opt.strip()
     if secret is None:
@@ -111,12 +114,12 @@ def macro_sshkey(yppi:ipp.iYamlPreProcessor, args:str) -> str:
     elif opt.isdigit():
       keylen = int(opt)
     else:
-      msg(ppv, f'Ignoring keygen option {opt}')  
+      yppi.msg(f'Ignoring keygen option {opt}')
   return gen(yppi.key_store(), secret, keytype, keylen).strip()
 
 def cb_sshkey(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
   '''Handler for SSH key pairs
-  
+
   :param yppi: Yaml Pre-Processor instance
   :param args: argument string passed in the pre-processor directive
   :param prefix: used to maintain YAML structure
