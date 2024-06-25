@@ -18,9 +18,9 @@ Syntax:
 - `#define key value`
 - `$<key>` and `$$` to escape.  Non resolvable references are not
   substituted.
-- password generator:\
-  `$<pwgen:options>`
-- ssh key gernator:\
+- password generator:
+  - `$<pwgen:options>`
+- ssh key generator:
   - `$<keygen:options>`
   - `$<sshkey:options>`
   - `#sshkey args`

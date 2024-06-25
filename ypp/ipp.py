@@ -33,6 +33,8 @@ class iYamlPreProcessor:
     The current filename and (optionally)line number are set
     to the passed values.
 
+    :Example:
+
     ```python
     >>> iYamlPreProcessor().save_state('one')
     (None, 0)
@@ -51,17 +53,20 @@ class iYamlPreProcessor:
 
     Restore the saved state as returned from the `save_state`
     method.
+
     '''
     self.filename, self.line = state
 
   def get_filename(self) -> str:
     '''Returns the current working filename
 
+    :Example:
     ```python
     >>> iYamlPreProcessor().get_filename() is None
     True
 
     ```
+
     '''
     return self.filename
 

@@ -5,6 +5,32 @@ This library can be used to enhance YAML based configuration
 files to also include pre-processor directives and macro
 expansions.
 
+This module makes available the {py:obj}`pproc.YamlPreProcessor`
+and {py:obj}`pproc.STR` directly.
+
+So you can just:
+
+```python
+import ypp
+
+pp = ypp.YamlPreProcessor()
+pp.define_var(ypp.STR.SECRETS_FILE,'secrets.ini')
+incpath = pp.lookup(ypp.STR.INCLUDE_PATH)
+
+```
+
+Alternatively you can use the procedural interface:
+
+```python
+import ypp
+
+pp = ypp.init()
+obj = ypp.load('sample.yaml')
+inc_path = ypp.lookup(ypp.STR.INCLUDE_PATH)
+
+```
+
+
 '''
 
 import os
@@ -16,6 +42,8 @@ try:
   from icecream import ic
 except ImportError:  # Graceful fallback if IceCream isn't installed.
   ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
+
+import __meta__
 
 saved_path = list(sys.path)
 ''' _private_
@@ -30,15 +58,6 @@ from pproc import STR, YamlPreProcessor
 sys.path = saved_path
 del saved_path
 
-class __meta__:
-  '''Package meta data'''
-  name = 'ypplib'
-  version = VERSION
-  author = 'A Liu Ly'
-  author_email = 'alejandrol@t-systems.com'
-  description = 'Yaml Pre-Processor library'
-  url = 'https://github.com/aliuly/ypplib'
-  license = 'MIT'
 
 default_vars = dict()
 ''' _private_
@@ -62,7 +81,7 @@ def init(config:list[str] = [], include:list[str] = [], define:list[str] = [], a
   which only allows for a single pre-processor instance to be used.
 
   If multiple pre-processor instances are needed, these can be created
-  by creating a new YamlPreProcessor` object instance.
+  by creating a new {py:obj}`pproc.YamlPreProcessor`  object instance.
 
   '''
   if len(default_vars) == 0:
@@ -77,11 +96,11 @@ def process(fileptr:str|typing.TextIO) -> str:
   :raises RuntimeError: If `init` has not been called
 
   Process the given file or file-pointer using the current
-  `YamlPreProcessor` instance.
+  {py:obj}`pproc.YamlPreProcessor` instance.
 
   You **must** call `init` before using `process`.
 
-  Multiple calls to `process` will use the same `YamlPreProcessor`
+  Multiple calls to `process` will use the same {py:obj}`pproc.YamlPreProcessor`
   instance.  This means that variables defined in previous calls
   to `process` will remain for the duration of the program run.
   '''
@@ -107,3 +126,13 @@ def lookup(name:str) -> str|None:
   '''
   if len(default_vars) == 0: raise RuntimeError
   return default_vars[VERSION].lookup(name)
+
+def define_var(key:str, value:str, var_expand = False) -> None:
+  '''Define a pre-processor variable
+  :param key: name of variable to define
+  :param value: value to assign to variable
+  :param var_expand: if `True` the string in `value` will be evalued for variable expansion.  `False` omits variable expansion (This is the default).
+  :raises RuntimeError: If `init` has not been called
+  '''
+  if len(default_vars) == 0: raise RuntimeError
+  default_vars[VERSION].define_var(key, value, var_expand)
