@@ -1,0 +1,24 @@
+#
+# Try pre-processor features
+#
+#define ABC 123
+
+x$(ABC): 433
+
+balh:
+ #include ssh/port443.yaml
+cheh:
+- content: |
+     #include --raw vars.bat
+- yaho: {}
+- sed -i~ -e 's/^127\.0\.0\.1\s*.*$/127.0.0.1 localhost '$$(uname -n)'/' /etc/hosts
+
+base64: |
+  #include --bin vars.bat
+cmd_output: |
+  #exec ls -l
+run_commands:
+  #include sslh.yaml
+oh: $(ABC)
+home: $(HOME)
+shell: $(SHELL)

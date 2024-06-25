@@ -6,6 +6,7 @@ YAML pre-processor library
 - configuration
   - defaults from application
   - read defaults from config ini
+  - read defaults from environment
   - from command line arguments: -D -I
   - in-line defines
 - out to file using UNIX or MSDOS newlines
@@ -24,4 +25,14 @@ Syntax:
 - `#ifdef`, `#ifndef`, `#else`, `#endif`
 - `#exec`, `#error`, `#warn`
 
-  
+Things to try:
+
+- doctests
+- unittests
+- use `newline` in open to set the EOL
+
+NOTE:
+
+Macros are of the for `$(something)`.  This is similar to the syntax
+in Makefiles.  Unfortunately it overlaps with Shell syntax of
+`$(command)`.  Do we switch tosomething like `$<something>`?

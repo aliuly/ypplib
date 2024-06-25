@@ -1,0 +1,4 @@
+#define int_domain INTDOMAIN
+- sed -i~ -e 's/^127\.0\.0\.1\s*.*$/127.0.0.1 localhost '$$(uname -n)'/' /etc/hosts
+#define resolvectl_cmd for i in $$(resolvectl status | grep Link | cut -d"(" -f2 | cut -d")" -f1) ; do resolvectl domain $i $(int_domain) ; done
+$(resolvectl_cmd)
