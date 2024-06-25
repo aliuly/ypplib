@@ -32,6 +32,12 @@ class iYamlPreProcessor:
 
     The current filename and (optionally)line number are set
     to the passed values.
+
+    ```python
+    >>> iYamlPreProcessor().save_state('one')
+    (None, 0)
+
+    ```
     '''
     saved_name = self.filename
     saved_line = self.line
@@ -49,7 +55,14 @@ class iYamlPreProcessor:
     self.filename, self.line = state
 
   def get_filename(self) -> str:
-    '''Returns the current working filename'''
+    '''Returns the current working filename
+
+    ```python
+    >>> iYamlPreProcessor().get_filename() is None
+    True
+
+    ```
+    '''
     return self.filename
 
   def msg(self, text:str) -> None:
@@ -58,6 +71,7 @@ class iYamlPreProcessor:
 
     Displays a message.  It uses the current state to report
     what `filename` and `line` number is being processed.
+
     '''
     if self.filename:
       sys.stderr.write(f'"{self.filename}",{self.line}: {text}\n')
@@ -149,3 +163,8 @@ class iYamlPreProcessor:
   def key_store(self) -> str:
     '''Return the value of the defined `key_store` directory.'''
     raise NotImplementedError
+
+if __name__ == '__main__':
+  import doctest
+  failures, tests = doctest.testmod()
+  if failures > 0: sys.exit(1)

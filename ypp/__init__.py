@@ -25,7 +25,7 @@ saved_path = list(sys.path)
 sys.path.append(os.path.dirname(__file__))
 
 from version import VERSION
-from process import STR, YamlPreProcessor
+from pproc import STR, YamlPreProcessor
 
 sys.path = saved_path
 del saved_path
@@ -63,6 +63,7 @@ def init(config:list[str] = [], include:list[str] = [], define:list[str] = [], a
 
   If multiple pre-processor instances are needed, these can be created
   by creating a new YamlPreProcessor` object instance.
+
   '''
   if len(default_vars) == 0:
     default_vars[VERSION] = YamlPreProcessor(config, include, define, app_defaults, env_prefix)

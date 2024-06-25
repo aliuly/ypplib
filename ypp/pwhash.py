@@ -58,6 +58,12 @@ def gen_rand(length:int = DEF_PWLEN, charset:str|None = None) -> str:
   gen_rand(12, string.ascii_lowercase + string.ascii_uppercase + string.digits)
   ```
 
+  ```python
+  >>> len(gen_rand(13))
+  13
+
+  ```
+
   '''
   if charset is None: charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
   return ''.join(random.sample(charset, length))
@@ -76,6 +82,30 @@ def enc_passwd(passwd:str, encode:int = TEXT) -> str:
   - SHA512
   - VNC
   - TEXT (the default for all non-recognized hash types)
+
+  ```python
+  >>> enc_passwd('onetwo', TEXT)
+  'onetwo'
+
+  >>> len(enc_passwd('onetwo', MD5))
+  34
+  >>> enc_passwd('onetwo', MD5)[:3]
+  '$1$'
+
+  >>> len(enc_passwd('onetwo', SHA256))
+  63
+  >>> enc_passwd('onetwo', SHA256)[:3]
+  '$5$'
+
+  >>> len(enc_passwd('onetwo', SHA512))
+  106
+  >>> enc_passwd('onetwo', SHA512)[:3]
+  '$6$'
+
+  >>> enc_passwd('onetwo', VNC)
+  '15udw9Bnk/s='
+
+  ```
   '''
 
   if encode == MD5:
@@ -102,6 +132,12 @@ def gen(secrets_file:str, secret:str, encode:int = TEXT, pwlen:int = DEF_PWLEN, 
 
   This will either use an existing password or generate a new one.  This
   will update the `secrets_file` if a new password is generated.
+
+  ```python
+  >>> len(gen('pwgen.txt','linux', pwlen=32))
+  32
+
+  ```
   '''
   if len(secrets_cache) == 0:
     if os.path.isfile(secrets_file):
@@ -163,15 +199,13 @@ def macro_pwgen(yppi:ipp.iYamlPreProcessor, args:str) -> str:
 
 
 if __name__ == '__main__':
-  print(gen_rand())
-  print('MD5', enc_passwd(gen_rand(), MD5))
-  print('SHA256', enc_passwd(gen_rand(), SHA256))
-  print('SHA512', enc_passwd(gen_rand(), SHA512))
-  print('vnc', enc_passwd(gen_rand(), VNC))
-  print(gen_rand(charset = string.ascii_lowercase))
+  import doctest
+  import sys
 
-  print('pwgen', gen('pwgen.txt', 'blah', encode = MD5))
-  print('pwgen', gen('pwgen.txt', 'blah', encode = MD5))
-  print('pwgen', gen('pwgen.txt', 'blah'))
+  gen('pwgen.txt','linux', pwlen=32)
+  failures, tests = doctest.testmod()
+
   os.unlink('pwgen.txt')
+
+  if failures > 0: sys.exit(1)
 

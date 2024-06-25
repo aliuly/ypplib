@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-''' YAML pre-processor module
+'''Main YAML pre-processor implementation
 
 This can be used as python module or as a command line.
 
@@ -30,31 +30,48 @@ except ImportError:  # Graceful fallback if IceCream isn't installed.
   ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
 
 class STR:
+  '''String definitions'''
   INCLUDE_PATH = 'include_path'
+  '''Include path variable'''
   SECRETS_FILE = 'secrets_file'
+  '''Variable containing the filename used to store pwgen secrets'''
   KEY_STORE = 'key_store'
+  '''Variable containing the directory used to store generated ssh keys'''
   PATH_SEPARATOR = ';' if platform.system() == 'Windows' else ':'
+  '''Path separator character. `:` unless Windows which uses `;`'''
 
 class MK:
+  '''Characters used to signal macros'''
   SIGNAL = '$'
+  '''Macro character indicator'''
   OPEN = '<'
+  '''Open macro character'''
   CLOSE = '>'
+  '''Close macro character'''
 
 class YppDirective:
+  '''Class used to manage pre-processor directive or macro callbacks'''
   def __init__(self, callback:typing.Callable, expand_vars:bool = True):
+    '''YppDirective constructor
+    :param callback: Function to call to hanlde this macro or directive
+    :param expand_vars: If True (default) args have variables expanded.  If `False`, variable expansion is skipped.
+    '''
     self.callback = callback
     self.expand_vars = expand_vars
 
 def __TODO__(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
-  '''Handler
+  ''' _internal_ Place holder for un-implemented directive/macros
 
+  :meta internal:
   :param yppi: Yaml Pre-Processor instance
   :param args: argument string passed in the pre-processor directive
-  :param prefix: used to maintain YAML structure
+  :param prefix: used to maintain YAML structure (ignored for macros)
+  :returns: processed output
   '''
   raise NotImplementedError
 
 class YamlPreProcessor(ipp.iYamlPreProcessor):
+  '''YAML Pre-processor instance'''
   # Complied RegExps
   RE_VALID_ID = re.compile(r'^[_A-Za-z][_A-Za-z0-9]*$')
   ''' Regular expressions to validate pre-processor variable names '''
@@ -69,10 +86,31 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
   ''' Regular expression to parse definitions '''
 
   def cb_define(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+    '''_internal_ Helper function to define variables
+    :meta internal:
+    :param yppi: Yaml Pre-Processor instance
+    :param args: argument string passed in the pre-processor directive
+    :param prefix: used to maintain YAML structure (ignored for macros)
+    :returns: processed output
+    '''
     return YamlPreProcessor.cb_do_define(yppi, args, False)
   def cb_default(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+    '''_internal_ Helper function to default variables
+    :meta internal:
+    :param yppi: Yaml Pre-Processor instance
+    :param args: argument string passed in the pre-processor directive
+    :param prefix: used to maintain YAML structure (ignored for macros)
+    :returns: processed output
+    '''
     return YamlPreProcessor.cb_do_define(yppi, args, True)
   def cb_do_define(yppi:ipp.iYamlPreProcessor, args:str, as_default:bool = False) -> str:
+    '''_internal_ Helper function to handle define/default statements
+    :meta internal:
+    :param yppi: Yaml Pre-Processor instance
+    :param args: argument string passed in the pre-processor directive
+    :param prefix: used to maintain YAML structure (ignored for macros)
+    :returns: processed output
+    '''
     mv = YamlPreProcessor.RE_DEFINE.match(args)
     if not mv:
       yppi.msg('Invalid define/default directive')
@@ -93,6 +131,11 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     return ''
 
   def define_var(self, key:str, value:str, var_expand = False) -> None:
+    '''Define a pre-processor variable
+    :param key: name of variable to define
+    :param value: value to assign to variable
+    :param var_expand: if `True` the string in `value` will be evalued for variable expansion.  `False` omits variable expansion (This is the default).
+    '''
     if not YamlPreProcessor.RE_VALID_ID.match(key):
       self.msg(f'Invalid keyname "{key}')
       return
@@ -100,16 +143,36 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     self.ppv[key] = value
 
   def register_cb(self, directive:str, callback:typing.Callable, expand_vars:bool = True) -> None:
+    '''Register a pre-processor directive callback
+    :param directive: directive to register
+    :param callback: Function to call when executing this pre-processor directive
+    :param expand_vars: If `True` passed arguments will be check for variable expansions before calling function.  `False` variable expansions can be omitted.
+    '''
     self.cmds[directive] = YppDirective(callback, expand_vars)
   def register_macro(self, macro:str, callback:typing.Callable, expand_vars:bool = True) -> None:
+    '''Register a macro callback
+    :param macro: macro to register
+    :param callback: Function to call when executing this macro
+    :param expand_vars: If `True` passed arguments will be check for variable expansions before calling function.  `False` variable expansions can be omitted.
+    '''
     self.macros[macro] = YppDirective(callback, expand_vars)
 
   def cb_error(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+    '''Abort program execution
+    :param yppi: Yaml Pre-Processor instance
+    :param args: message to display
+    :param prefix: ignored
+    '''
     yppi.msg(args)
-    sys.exit(0)
+    sys.exit(1)
     return ''
 
   def cb_warn(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+    '''Display warning on stderr
+    :param yppi: Yaml Pre-Processor instance
+    :param args: message to display
+    :param prefix: ignored
+    '''
     yppi.msg(args)
     return ''
 
@@ -187,11 +250,18 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
         self.msg(f'{key} is not a valid name')
 
   def secrets_file(self) -> str:
+    '''Return the value of `secrets_file`'''
     return self.ppv[STR.SECRETS_FILE]
   def key_store(self) -> str:
+    '''Return the value of `key_store`'''
     return self.ppv[STR.KEY_STORE]
 
   def parse_line(line:str) -> tuple[str,str,str]:
+    '''_internal_ utility function to parse pre-processor directives
+    :meta internal:
+    :param line: text to parse
+    :returns: tuple(token, args, prefix)
+    '''
     mv = YamlPreProcessor.RE_PP_DIRECTIVE.match(line)
     if mv:
       return mv.group(2), line[mv.end():].strip(), mv.group(1)
@@ -283,7 +353,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     '''Process a file
 
     :param str filename: filename to read
-
+    :param str prefix: (optional) Prefix string to maintain YAML structure
     :returns str: processed text
     '''
 
@@ -355,6 +425,10 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     return -1
 
   def vexists(self, name:str) -> bool:
+    '''Check if a name exists
+    :param name: pre-processor variable to check
+    :returns: `True` if `name` exists, `False` otherwise.
+    '''
     return True if name in self.ppv else False
 
   def lookup(self, name:str, loopctl:dict = dict()) -> str|None:
@@ -465,4 +539,4 @@ if __name__ == '__main__':
   # ~ ic('Input', line)
   # ~ print(expand_vars(line, ppv))
 
-  sys.exit()
+  pass
