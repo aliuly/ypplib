@@ -35,6 +35,11 @@ class STR:
   KEY_STORE = 'key_store'
   PATH_SEPARATOR = ';' if platform.system() == 'Windows' else ':'
 
+class MK:
+  SIGNAL = '$'
+  OPEN = '<'
+  CLOSE = '>'
+
 class YppDirective:
   def __init__(self, callback:typing.Callable, expand_vars:bool = True):
     self.callback = callback
@@ -42,7 +47,7 @@ class YppDirective:
 
 def __TODO__(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
   '''Handler
-  
+
   :param yppi: Yaml Pre-Processor instance
   :param args: argument string passed in the pre-processor directive
   :param prefix: used to maintain YAML structure
@@ -57,7 +62,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
   ''' Regular expression to get pre-processor directives '''
   RE_PP_DIRECTIVE_ALT = re.compile(r'^(\s*-\s*)#\s*([a-z]+)\s*')
   ''' Regular expression to get alternative pre-processor directives '''
-  
+
   RE_DEFER = re.compile(r'^\s*--(defer)\s+')
   ''' Regular expression to check if variable expansion should be deferred '''
   RE_DEFINE = re.compile(r'^([_A-Za-z][_A-Za-z0-9]*)\s*')
@@ -76,7 +81,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     vname = mv.group(1)
     args = args[mv.end():]
     if as_default and yppi.vexists(vname): return ''
-  
+
     mv = YamlPreProcessor.RE_DEFER.match(args)
     if mv:
       args = args[mv.end():]
@@ -128,6 +133,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
       'include': YppDirective(includes.cb_inc),
       'exec': YppDirective(extcmd.cb_exec),
       'sshkey': YppDirective(sshkeys.cb_sshkey),
+      'keygen': YppDirective(sshkeys.cb_sshkey),
       'error': YppDirective(YamlPreProcessor.cb_error),
       'warn': YppDirective(YamlPreProcessor.cb_warn),
       'cfgload': YppDirective(cfgfile.cb_load),
@@ -135,6 +141,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     self.macros = {
       'pwgen': YppDirective(pwhash.macro_pwgen),
       'sshkey': YppDirective(sshkeys.macro_sshkey),
+      'keygen': YppDirective(sshkeys.macro_sshkey),
     }
 
     self.ppv = {
@@ -143,11 +150,11 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
       STR.KEY_STORE: 'keys',
     }
     self.ppv.update(app_defaults)
-  
+
     # Read configuration files (formatted as YAML)
     for cfg_file in config:
       cfgfile.load(cfg_file, self)
-  
+
     # Initialize from environment variables
     prefix_len = len(env_prefix)
     for key,val in os.environ.items():
@@ -162,7 +169,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
       if not os.path.isdir(incdir): continue
       self.ppv[STR.INCLUDE_PATH] += cc + incdir
       cc = STR.PATH_SEPARATOR
-      
+
     # Handle define cli options
     for kvp in define:
       if '=' in kvp:
@@ -176,12 +183,12 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
         self.ppv[key] = val
       else:
         self.msg(f'{key} is not a valid name')
-    
+
   def secrets_file(self) -> str:
     return self.ppv[STR.SECRETS_FILE]
   def key_store(self) -> str:
     return self.ppv[STR.KEY_STORE]
-    
+
   def parse_line(line:str) -> tuple[str,str,str]:
     mv = YamlPreProcessor.RE_PP_DIRECTIVE.match(line)
     if mv:
@@ -272,19 +279,19 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
 
   def read_file(self, filename:str, prefix:str = '') -> str:
     '''Process a file
-    
+
     :param str filename: filename to read
-    
+
     :returns str: processed text
     '''
-  
+
     filename = self.find_include(filename)
     with open(filename, 'r') as fp:
       state = self.save_state(filename)
       txt = self.parser(fp, prefix)
       self.restore_state(state)
     return txt
-  
+
   def find_include(self, fname:str) -> str:
     ''' Find included file path
 
@@ -318,28 +325,28 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
 
   def find_closing_bracket(line:str, off:int) -> int:
     '''Find closing bracket
-    
+
     :param str line: string to scan
     :param int off: offset in string
     :returns int: returns the index to the closing bracket or -1 if not found
-    
-    Used to find the closing bracket for a `$(macro reference)`.  It 
+
+    Used to find the closing bracket for a `$(macro reference)`.  It
     will handle `$$` escapes and nested macro references.
-    
+
     '''
     i = off
     ln = len(line)
     nesting = 0
-    
+
     while i < ln:
-      if line[i] == '$' and i+1 < ln and line[i+1] == '$':
+      if line[i] == MK.SIGNAL and i+1 < ln and line[i+1] == MK.SIGNAL:
         i += 2
         continue
-      if line[i] == '$' and i+1 < ln and line[i+1] == '(':
+      if line[i] == MK.SIGNAL and i+1 < ln and line[i+1] == MK.OPEN:
         i += 2
         nesting += 1
         continue
-      if line[i] == ')':
+      if line[i] == MK.CLOSE:
         if nesting == 0: return i
         nesting -= 1
       i += 1
@@ -350,7 +357,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
 
   def lookup(self, name:str, loopctl:dict = dict()) -> str|None:
     '''Look-up variable defintions
-    
+
     :param name: variable to look-up
     :param loopctl: used to catch reference loops
     :returns: expanded string
@@ -366,34 +373,34 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
 
   def expand_vars(self, line:str, loopctl:dict = dict()) -> str:
     '''Expand variables
-    
+
     :param line: text with variables to expand
     :param  loopctl: used to catch reference loops
-    
+
     Given a string with macro references it will expand them
     '''
-    if not '$' in line: return line # This is the trivial case...
+    if not MK.SIGNAL in line: return line # This is the trivial case...
 
     offset = 0
     txt = ''
     lenline= len(line)
 
-    while (pos := line.find('$', offset)) != -1:
+    while (pos := line.find(MK.SIGNAL, offset)) != -1:
       txt += line[offset:pos]
       offset = pos
       if pos+1 == lenline: break
-      if line[pos+1] == '$':
-        txt += '$'
+      if line[pos+1] == MK.SIGNAL:
+        txt += MK.SIGNAL
         offset += 2
         continue
-      if line[pos+1] != '(':
+      if line[pos+1] != MK.OPEN:
         txt += line[offset:offset+2]
         offset += 2
         continue
 
       closing = YamlPreProcessor.find_closing_bracket(line, offset+2)
       if closing == -1: break
-      
+
       ref = line[offset+2:closing]
       exp = self.run_macro(ref, loopctl)
       if exp is None:
@@ -401,22 +408,22 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
         txt += line[offset:closing+1]
       else:
         txt += exp
-      
+
       offset = closing +1
     txt += line[offset:]
-    
+
     return txt
 
   def run_macro(self, macro:str, loopctl:dict) -> str|None:
     '''Run macro references
-    
+
     :param macro: Macro specification to run
     :param loopctl: used to catch reference loops
     :returns: expanded string
-    
+
     It will run the given macro.  Primarily it is meant to handle
     variable expansions, but it can also handle macros such as:
-    
+
     - pwgen
     - ssh keygen
     '''
@@ -440,7 +447,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
 ###################################################################
 
 if __name__ == '__main__':
-  
+
   # ~ ppv = dict(os.environ)
   # ~ ppv[STR_FILENAME] = None
   # ~ ppv[STR_LINE] = 0
@@ -455,5 +462,5 @@ if __name__ == '__main__':
   # ~ line = 'Infinite $(loop)'
   # ~ ic('Input', line)
   # ~ print(expand_vars(line, ppv))
-  
+
   sys.exit()

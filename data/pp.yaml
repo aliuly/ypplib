@@ -3,7 +3,7 @@
 #
 #define ABC 123
 
-x$(ABC): 433
+x$<ABC>: 433
 
 balh:
  #include ssh/port443.yaml
@@ -19,6 +19,6 @@ cmd_output: |
   #exec ls -l
 run_commands:
   #include sslh.yaml
-oh: $(ABC)
-home: $(HOME)
-shell: $(SHELL)
+oh: $<ABC>
+home: $<HOME>
+shell: $<SHELL>

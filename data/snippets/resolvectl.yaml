@@ -10,17 +10,17 @@
 #
 # The only useful case I see for its use is in a Internet cafe scenario.
 # See https://www.ctrl.blog/entry/systemd-resolved.html
-# 
+#
 
 #ifndef int_domain
  #ifdef SID
- #define int_domain $(SID).nova
+ #define int_domain $<SID>.nova
  #endif
 #endif
 
-#define resolvectl_cmd --defer for i in $$(resolvectl status | grep Link | cut -d"(" -f2 | cut -d")" -f1) ; do resolvectl domain $i $(int_domain) ; done
+#define resolvectl_cmd for i in $(resolvectl status | grep Link | cut -d"(" -f2 | cut -d")" -f1) ; do resolvectl domain $i $<int_domain> ; done
 
-# Also add to rc.local to cater for systems that are not up all the time, 
-- $(resolvectl_cmd)
+# Also add to rc.local to cater for systems that are not up all the time,
+- $<resolvectl_cmd>
 - "[ ! -f /etc/rc.local ] && ( echo '#!/bin/bash' > /etc/rc.local ; chmod 755 /etc/rc.local )"
-- echo '$(resolvectl_cmd)' >> /etc/rc.local
+- echo '$<resolvectl_cmd>' >> /etc/rc.local

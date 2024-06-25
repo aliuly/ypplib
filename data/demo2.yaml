@@ -42,9 +42,9 @@ nets:
               groups: users
               lock_passwd: false
               shell: /bin/bash
-              passwd: $(pwgen:linux:$(PWDEFAULTS))
+              passwd: $<pwgen:linux:$<PWDEFAULTS>>
               ssh_authorized_keys:
-              - $(sshkey:linux:pub)
+              - $<sshkey:linux:pub>
           write_files:
            - owner: root:root
              path: /root/linux.key

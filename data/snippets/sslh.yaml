@@ -9,6 +9,6 @@
 #endif
 
 # Snippets to manage SSLH
-- sed -i~ -e 's/Listen 443[^0-9]*$/Listen $(sslh_tls_listen) https/' /etc/apache2/ports.conf
-- sed -i~ -e 's/<change-me>/0.0.0.0/' -e 's/--ssl 127.0.0.1:443/--tls $(sslh_tls_listen)/' /etc/default/sslh
+- sed -i~ -e 's/Listen 443[^0-9]*$/Listen $<sslh_tls_listen> https/' /etc/apache2/ports.conf
+- sed -i~ -e 's/<change-me>/0.0.0.0/' -e 's/--ssl 127.0.0.1:443/--tls $<sslh_tls_listen>/' /etc/default/sslh
 - service sslh restart

@@ -3,9 +3,9 @@
 #endif
 #define DEFPWLEN 16
 #define PUBLIC_DNS_ZONE otc1.cloudkit7.xyz
-#define vhost_fqdn $(SID).$(PUBLIC_DNS_ZONE)
+#define vhost_fqdn $<SID>.$<PUBLIC_DNS_ZONE>
 #define acme_email alejandrol@t-systems.com
-#define acme_domains -d $(vhost_fqdn)
+#define acme_domains -d $<vhost_fqdn>
 #include sslh-config.yaml
 
 #define DONT_USE_ACME
@@ -15,7 +15,7 @@
  #include selfsigned-config.yaml
 #endif
 
-sid: $(SID)
+sid: $<SID>
 snat: True
 sgs:
   basic:
@@ -108,9 +108,9 @@ nets:
             groups: users
             lock_passwd: false
             shell: /bin/bash
-            passwd: $(pwgen:linux:SHA256:$(DEFPWLEN))
+            passwd: $<pwgen:linux:SHA256:$<DEFPWLEN>>
             ssh_authorized_keys:
-            - $(sshkey:linux:pub)
+            - $<sshkey:linux:pub>
 
           runcmd:
             # Resize system image...
@@ -125,15 +125,15 @@ nets:
             #include acme.yaml
             #else
             #include selfsigned.yaml
-            - $(selfsigned_cmd) $(vhost_fqdn)
+            - $<selfsigned_cmd> $<vhost_fqdn>
             #endif
 
             # Enable vhost
-            - a2ensite $(vhost_fqdn)
+            - a2ensite $<vhost_fqdn>
             - a2enmod ssl
             - a2enmod proxy
             - a2enmod proxy_http
             - a2enmod proxy_wstunnel
             - service apache2 restart
 
-        cname: $(SID)
+        cname: $<SID>

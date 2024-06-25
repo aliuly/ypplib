@@ -16,12 +16,15 @@ YAML pre-processor library
 Syntax:
 
 - `#define key value`
-- `$(key)' and $$ to escape.  Non resolvable references are not
+- `$<key>` and `$$` to escape.  Non resolvable references are not
   substituted.
 - password generator:\
-  `$(PWGEN:options)`
+  `$<pwgen:options>`
 - ssh key gernator:\
-  `$(KEYGEN:options)`
+  - `$<keygen:options>`
+  - `$<sshkey:options>`
+  - `#sshkey args`
+  - `#keygen args`
 - `#ifdef`, `#ifndef`, `#else`, `#endif`
 - `#exec`, `#error`, `#warn`
 
@@ -29,10 +32,4 @@ Things to try:
 
 - doctests
 - unittests
-- use `newline` in open to set the EOL
 
-NOTE:
-
-Macros are of the for `$(something)`.  This is similar to the syntax
-in Makefiles.  Unfortunately it overlaps with Shell syntax of
-`$(command)`.  Do we switch tosomething like `$<something>`?
