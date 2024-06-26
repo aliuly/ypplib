@@ -2,6 +2,7 @@
 ''' YAML pre-processor interface
 
 '''
+import platform
 import sys
 import typing
 
@@ -11,6 +12,16 @@ try:
 except ImportError:  # Graceful fallback if IceCream isn't installed.
   ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
 
+class STR:
+  '''String definitions'''
+  INCLUDE_PATH = 'include_path'
+  '''Include path variable'''
+  PATH_SEPARATOR = ';' if platform.system() == 'Windows' else ':'
+  '''Path separator character. `:` unless Windows which uses `;`'''
+  SECRETS_FILE = 'secrets_file'
+  '''Variable containing the filename used to store pwgen secrets'''
+  KEY_STORE = 'key_store'
+  '''Variable containing the directory used to store generated ssh keys'''
 
 class iYamlPreProcessor:
   '''This class defines the interface for YamlPreProcessor
@@ -161,12 +172,6 @@ class iYamlPreProcessor:
     is relative to the current file being processed.  Lastly it
     will check in the directories as defined in the `include_path`.
     '''
-    raise NotImplementedError
-  def secrets_file(self) -> str:
-    '''Return the value of the defined `secrets_file`.'''
-    raise NotImplementedError
-  def key_store(self) -> str:
-    '''Return the value of the defined `key_store` directory.'''
     raise NotImplementedError
 
 if __name__ == '__main__':

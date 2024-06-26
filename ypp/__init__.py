@@ -52,7 +52,8 @@ saved_path = list(sys.path)
 sys.path.append(os.path.dirname(__file__))
 
 from version import VERSION
-from pproc import STR, YamlPreProcessor
+from pproc import YamlPreProcessor
+from ipp import STR
 import __meta__
 
 sys.path = saved_path

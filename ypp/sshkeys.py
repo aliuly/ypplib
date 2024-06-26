@@ -12,7 +12,7 @@ try:
 except ImportError:
   pass
 
-import ipp
+from ipp import STR, iYamlPreProcessor
 
 DEF_KEYLEN = 4096
 '''Default key length'''
@@ -20,7 +20,6 @@ PUB = 1
 '''Return public keys'''
 PRIV = 2
 '''Return private keys'''
-
 
 def ssh_key_gen(keysz: int = DEF_KEYLEN):
   '''Generate a ssh key pair
@@ -90,7 +89,7 @@ def gen(key_store:str, key_id:str, mode:int = PUB, key_sz:int = DEF_KEYLEN, comm
   else:
     return public_key
 
-def macro_sshkey(yppi:ipp.iYamlPreProcessor, args:str) -> str:
+def macro_sshkey(yppi:iYamlPreProcessor, args:str) -> str:
   '''SSH Key pair generator
 
   :param yppi: YamlPreProcessor instance
@@ -115,9 +114,9 @@ def macro_sshkey(yppi:ipp.iYamlPreProcessor, args:str) -> str:
       keylen = int(opt)
     else:
       yppi.msg(f'Ignoring keygen option {opt}')
-  return gen(yppi.key_store(), secret, keytype, keylen).strip()
+  return gen(yppi.lookup(STR.KEY_STORE), secret, keytype, keylen).strip()
 
-def cb_sshkey(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+def cb_sshkey(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
   '''Handler for SSH key pairs
 
   :param yppi: Yaml Pre-Processor instance
@@ -134,7 +133,16 @@ def cb_sshkey(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
     prefix = prefix2
   return txt
 
+def register(yppi:iYamlPreProcessor) -> None:
+  '''Register callback for keypair statements and/or macros
 
+  :param yppi: Yaml Pre-Processor instance
+  '''
+  yppi.define_var(STR.KEY_STORE, 'keys')
+  yppi.register_cb('sshkey', cb_sshkey)
+  yppi.register_cb('keygen', cb_sshkey)
+  yppi.register_macro('sshkey', macro_sshkey)
+  yppi.register_macro('keygen', macro_sshkey)
 
 if __name__ == '__main__':
   import shutil

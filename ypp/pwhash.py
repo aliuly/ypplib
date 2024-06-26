@@ -14,7 +14,7 @@ except ImportError:
   pass
 
 from d3des import encrypt as d3des
-import ipp
+from ipp import STR, iYamlPreProcessor
 
 TEXT = 0
 '''Encode password as clear-text'''
@@ -59,14 +59,21 @@ def gen_rand(length:int = DEF_PWLEN, charset:str|None = None) -> str:
   ```
 
   ```python
-  >>> len(gen_rand(13))
-  13
+  >>> random.seed(100), gen_rand()
+  (None, 'zKFST2OEfWjxnYXa')
+
+
+  >>> random.seed(101), gen_rand(32)
+  (None, 'm8Aa2YG0AL4Nf2utGc21a1CuAxt5RAUg')
+
+  >>> random.seed(102), gen_rand(24,string.digits)
+  (None, '737131295684894815597137')
 
   ```
 
   '''
-  if charset is None: charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
-  return ''.join(random.sample(charset, length))
+  if charset is None or charset == '': charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
+  return ''.join(random.sample(charset*length, length))
 
 def enc_passwd(passwd:str, encode:int = TEXT) -> str:
   '''Encode a password using a standard hash
@@ -156,7 +163,7 @@ def gen(secrets_file:str, secret:str, encode:int = TEXT, pwlen:int = DEF_PWLEN, 
 
   return enc_passwd(passwd, encode)
 
-def macro_pwgen(yppi:ipp.iYamlPreProcessor, args:str) -> str:
+def macro_pwgen(yppi:iYamlPreProcessor, args:str) -> str:
   '''Implements pwgen macro
 
   :param yppi: YamlPreProcessor instance
@@ -174,7 +181,7 @@ def macro_pwgen(yppi:ipp.iYamlPreProcessor, args:str) -> str:
   secret = None
   encoding = TEXT
   pwlen = DEF_PWLEN
-  chrset = None
+  chrset = ''
 
   for opt in args.split(':'):
     opt = opt.strip()
@@ -185,17 +192,52 @@ def macro_pwgen(yppi:ipp.iYamlPreProcessor, args:str) -> str:
     elif opt.isdigit():
       pwlen = int(opt)
     elif opt.upper() == 'UPPER':
-      chrset = string.ascii_uppercase
+      chrset += string.ascii_uppercase
     elif opt.upper() == 'LOWER':
-      chrset = string.ascii_lowercase
+      chrset += string.ascii_lowercase
     elif opt.upper() == 'DIGITS':
-      chrset = string.digits
+      chrset += string.digits
     else:
       yppi.msg( f'Ignoring pwgen option {opt}')
 
-  return gen(yppi.secrets_file(), secret, encoding, pwlen, chrset)
+  return gen(yppi.lookup(STR.SECRETS_FILE), secret, encoding, pwlen, chrset)
+
+def macro_randstr(yppi:iYamlPreProcessor, args:str) -> str:
+  '''Implements randstr macro
+
+  :param yppi: YamlPreProcessor instance
+  :param args: additional arguments
+  :returns: generated string
+
+  Create a random string
+  '''
+  rndlen = DEF_PWLEN
+  chrset = ''
+
+  for opt in args.split(':'):
+    opt = opt.strip()
+    if opt.isdigit():
+      rndlen = int(opt)
+    elif opt.upper() == 'UPPER':
+      chrset += string.ascii_uppercase
+    elif opt.upper() == 'LOWER':
+      chrset += string.ascii_lowercase
+    elif opt.upper() == 'DIGITS':
+      chrset += string.digits
+    else:
+      yppi.msg( f'Ignoring rndstr option {opt}')
+
+  return gen_rand(rndlen,chrset)
 
 
+def register(yppi:iYamlPreProcessor) -> None:
+  '''Register callback for pwgen macros
+
+  :param yppi: Yaml Pre-Processor instance
+  '''
+  yppi.define_var(STR.SECRETS_FILE, 'secrets.yaml')
+  yppi.register_macro('pwgen', macro_pwgen)
+  yppi.register_macro('rndstr', macro_randstr)
 
 
 if __name__ == '__main__':

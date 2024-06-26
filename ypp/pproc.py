@@ -12,7 +12,6 @@ object (which is also valid YAML document)
 '''
 
 import os
-import platform
 import re
 import sys
 import typing
@@ -20,25 +19,15 @@ import typing
 import cfgfile
 import extcmd
 import includes
-import ipp
 import pwhash
 import sshkeys
+
+from ipp import STR, iYamlPreProcessor
 
 try:
   from icecream import ic
 except ImportError:  # Graceful fallback if IceCream isn't installed.
   ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
-
-class STR:
-  '''String definitions'''
-  INCLUDE_PATH = 'include_path'
-  '''Include path variable'''
-  SECRETS_FILE = 'secrets_file'
-  '''Variable containing the filename used to store pwgen secrets'''
-  KEY_STORE = 'key_store'
-  '''Variable containing the directory used to store generated ssh keys'''
-  PATH_SEPARATOR = ';' if platform.system() == 'Windows' else ':'
-  '''Path separator character. `:` unless Windows which uses `;`'''
 
 class MK:
   '''Characters used to signal macros'''
@@ -59,7 +48,7 @@ class YppDirective:
     self.callback = callback
     self.expand_vars = expand_vars
 
-def __TODO__(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+def __TODO__(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
   ''' _internal_ Place holder for un-implemented directive/macros
 
   :meta internal:
@@ -70,7 +59,7 @@ def __TODO__(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
   '''
   raise NotImplementedError
 
-class YamlPreProcessor(ipp.iYamlPreProcessor):
+class YamlPreProcessor(iYamlPreProcessor):
   '''YAML Pre-processor instance'''
   # Complied RegExps
   RE_VALID_ID = re.compile(r'^[_A-Za-z][_A-Za-z0-9]*$')
@@ -85,7 +74,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
   RE_DEFINE = re.compile(r'^([_A-Za-z][_A-Za-z0-9]*)\s*')
   ''' Regular expression to parse definitions '''
 
-  def cb_define(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+  def cb_define(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
     '''_internal_ Helper function to define variables
     :meta internal:
     :param yppi: Yaml Pre-Processor instance
@@ -94,7 +83,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     :returns: processed output
     '''
     return YamlPreProcessor.cb_do_define(yppi, args, False)
-  def cb_default(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+  def cb_default(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
     '''_internal_ Helper function to default variables
     :meta internal:
     :param yppi: Yaml Pre-Processor instance
@@ -103,7 +92,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     :returns: processed output
     '''
     return YamlPreProcessor.cb_do_define(yppi, args, True)
-  def cb_do_define(yppi:ipp.iYamlPreProcessor, args:str, as_default:bool = False) -> str:
+  def cb_do_define(yppi:iYamlPreProcessor, args:str, as_default:bool = False) -> str:
     '''_internal_ Helper function to handle define/default statements
     :meta internal:
     :param yppi: Yaml Pre-Processor instance
@@ -157,7 +146,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     '''
     self.macros[macro] = YppDirective(callback, expand_vars)
 
-  def cb_error(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+  def cb_error(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
     '''Abort program execution
     :param yppi: Yaml Pre-Processor instance
     :param args: message to display
@@ -167,7 +156,7 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     sys.exit(1)
     return ''
 
-  def cb_warn(yppi:ipp.iYamlPreProcessor, args:str, prefix:str = '') -> str:
+  def cb_warn(yppi:iYamlPreProcessor, args:str, prefix:str = '') -> str:
     '''Display warning on stderr
     :param yppi: Yaml Pre-Processor instance
     :param args: message to display
@@ -192,28 +181,27 @@ class YamlPreProcessor(ipp.iYamlPreProcessor):
     - in-line defines
     '''
     super().__init__()
+
     self.cmds = {
       'define': YppDirective(YamlPreProcessor.cb_define, False),
       'default': YppDirective(YamlPreProcessor.cb_default, False),
       'include': YppDirective(includes.cb_inc),
       'exec': YppDirective(extcmd.cb_exec),
-      'sshkey': YppDirective(sshkeys.cb_sshkey),
-      'keygen': YppDirective(sshkeys.cb_sshkey),
       'error': YppDirective(YamlPreProcessor.cb_error),
       'warn': YppDirective(YamlPreProcessor.cb_warn),
       'cfgload': YppDirective(cfgfile.cb_load),
     }
     self.macros = {
-      'pwgen': YppDirective(pwhash.macro_pwgen),
       'sshkey': YppDirective(sshkeys.macro_sshkey),
       'keygen': YppDirective(sshkeys.macro_sshkey),
     }
-
     self.ppv = {
       STR.INCLUDE_PATH: '',
-      STR.SECRETS_FILE: 'secrets.yaml',
-      STR.KEY_STORE: 'keys',
     }
+
+    sshkeys.register(self)
+    pwhash.register(self)
+
     self.ppv.update(app_defaults)
 
     # Read configuration files (formatted as YAML)
