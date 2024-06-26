@@ -21,7 +21,7 @@ jobs:
           sh setup.sh
       - name: Run doctests
         run: |
-          sh tests/doctests ypp
+          sh tests/doctests.sh ypp
       - name: Run CLI tests
         run: |
           ./py tests/test-ypp.py run data/testdata.yaml
