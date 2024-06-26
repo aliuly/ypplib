@@ -14,7 +14,7 @@ find . -maxdepth 1 -mindepth 1  -name '*.py' | (
   do
     if grep -q 'import doctest' "$pyfile" ; then
       echo "Testing $pyfile"
-      ../py "$pyfile" || rc=1
+      ../py python3 "$pyfile" || rc=1
     fi
   done
   exit $rc
