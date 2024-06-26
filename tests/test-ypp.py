@@ -18,6 +18,8 @@ def run_ypp(args:str) -> tuple[int,str,str]:
 
 
   sys.stderr.write(cmd+' : ')
+  if '--json' in cmd:
+    cmd += '| jq .'
   rc = subprocess.run(cmd,
                       capture_output=True,
                       text=True,
