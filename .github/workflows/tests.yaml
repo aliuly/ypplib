@@ -24,4 +24,4 @@ jobs:
           sh tests/doctests.sh ypp
       - name: Run CLI tests
         run: |
-          ./py tests/test-ypp.py run data/testdata.yaml
+          ./py python3 tests/test-ypp.py run data/testdata.yaml
