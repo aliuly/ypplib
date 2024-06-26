@@ -1,0 +1,27 @@
+name: automated testing
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    name: static-tests
+    steps:
+      - uses: actions/checkout@v3
+        with:
+         fetch-depth: 0
+      - name: Set-up dependancies
+        run: |
+          sh setup.sh
+      - name: Run doctests
+        run: |
+          sh tests/doctests ypp
+      - name: Run CLI tests
+        run: |
+          ./py tests/test-ypp.py run data/testdata.yaml

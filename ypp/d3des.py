@@ -387,6 +387,19 @@ def encrypt(clear):
   :returns str: encrypted password
 
   Encrypts a password using a VNC compatible format.
+
+  :Examples:
+  ```python
+  >>> encrypt('zahT9aib')
+  '7MjSEypOX1U='
+
+  >>> encrypt('Quiali1i')
+  '3hxs4eyguyQ='
+
+  >>> encrypt('thieNga1Yahh9oaY')
+  'jigZ/CZp6As='
+
+  ```
   '''
   clear = (bytes(clear,encoding='raw_unicode_escape') + b'\x00' * 8)[:8]
   strkey = b''.join([bytes(chr(x),encoding='raw_unicode_escape') for x in vnckey])
@@ -397,23 +410,10 @@ def encrypt(clear):
 
 # test
 if __name__ == '__main__':
-  try:
-    from icecream import ic
-  except ImportError:  # Graceful fallback if IceCream isn't installed.
-    ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
-  # ~ fakek = '0123456789abcdef'.decode('hex')
-  # ~ plain = '0123456789abcdef'.decode('hex')
-  # ~ cipher = '6e09a37726dd560c'.decode('hex')
-  # ~ ek = deskey(fakek, False)
-  # ~ dk = deskey(fakek, True)
-  # ~ assert desfunc(plain, ek) == cipher
-  # ~ assert desfunc(desfunc(plain, ek), dk) == plain
-  # ~ assert desfunc(desfunc(plain, dk), ek) == plain
-  # ~ print('test succeeded.')
-  passpadd = 'onetwo'
-  ctext = base64.b64encode(b'\xd7\x9b\x9d\xc3\xd0\x67\x93\xfb').decode('ascii')
+  import doctest
+  import random
+  import sys
 
-  enc = encrypt(passpadd)
-
-  ic([ctext,enc])
+  failures, tests = doctest.testmod()
+  if failures > 0: sys.exit(1)
 
