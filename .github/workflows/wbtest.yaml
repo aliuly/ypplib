@@ -19,7 +19,7 @@ jobs:
       - name: Tag versioning
         run: |
           python scripts/gitver.py
-          python scripts/gitver.py src/version.py
+          python scripts/gitver.py ypp/version.py
       - name: Install dependencies
         run: |
           del vars.bat
@@ -27,8 +27,6 @@ jobs:
       - name: Package EXEs
         run: |
           .\mk.bat
-      - name: Package snippets
-        run: Compress-Archive -Path snippets/* -Destination dist/snippets.zip
       - name: Looksie
         run: |
           dir dist
