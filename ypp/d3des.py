@@ -7,7 +7,8 @@ from [d3des.py](https://github.com/matthayes/vnc2flv/blob/master/vnc2flv/d3des.p
 
 ## Public Interface
 
-The only public interface function is {py:obj}`d3des.encrypt`.
+The only public interface function is {py:obj}`ypp.d3des.encrypt`.
+
 
 ## d3des.py - DES implementation
 

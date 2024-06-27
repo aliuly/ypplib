@@ -6,7 +6,7 @@ files to also include pre-processor directives and macro
 expansions.
 
 This module makes available the {py:obj}`pproc.YamlPreProcessor`
-and {py:obj}`pproc.STR` directly.
+and {py:obj}`ipp.STR` directly.
 
 So you can just:
 
