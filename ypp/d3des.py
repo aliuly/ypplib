@@ -3,10 +3,13 @@
 VNC compatible DES implementation
 
 This module was retreived on 2021-12-15
-from `d3des.py <https://github.com/matthayes/vnc2flv/blob/master/vnc2flv/d3des.py>`_.
+from [d3des.py](https://github.com/matthayes/vnc2flv/blob/master/vnc2flv/d3des.py).
+
+## Public Interface
+
+The only public interface function is {py:obj}`d3des.encrypt`.
 
 ## d3des.py - DES implementation
-
 
 Copyright (c) 2009 by Yusuke Shinyama
 
@@ -35,7 +38,6 @@ for humouring me on.
 
 Copyright (c) 1988,1989,1990,1991,1992 by Richard Outerbridge.
 (GEnie : OUTER; CIS : [71755,204]) Graven Imagery, 1992.
-
 
 
 '''
