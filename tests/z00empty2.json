@@ -1,0 +1,11 @@
+{
+    "args": "--unix --output output.txt data/empty.yaml",
+    "rc": 0,
+    "out": [
+        ""
+    ],
+    "err": [
+        ""
+    ],
+    "md5": "5c9ad2b87f5f1e3f3f9cc3dc64b39839"
+}

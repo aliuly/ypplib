@@ -1,0 +1,12 @@
+{
+    "args": "-Idata/snippets -DUSE_ACME --json=2 data/ts-v2.yaml",
+    "rc": 1,
+    "out": [
+        ""
+    ],
+    "err": [
+        "\"data/ts-v2.yaml\",2: Must define SID with -DSID=xyz",
+        ""
+    ],
+    "md5": null
+}

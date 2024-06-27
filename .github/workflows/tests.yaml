@@ -19,9 +19,10 @@ jobs:
       - name: Set-up dependancies
         run: |
           sh setup.sh
+          tar zxvf tests/demokeys.tgz
       - name: Run doctests
         run: |
           sh tests/doctests.sh ypp
-      #~ - name: Run CLI tests
-        #~ run: |
-          #~ ./py python3 tests/test-ypp.py run data/testdata.yaml
+      - name: Run CLI tests
+        run: |
+          ./py python3 tests/test-ypp.py test tests/z*.json

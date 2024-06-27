@@ -1,0 +1,36 @@
+{
+    "args": "--json=2 -Idata/snippets data/pp.yaml",
+    "rc": 0,
+    "out": [
+        "{",
+        "  \"x123\": 433,",
+        "  \"balh\": [",
+        "    \"echo Port 22 >> /etc/ssh/sshd_config\",",
+        "    \"echo Port 443 >> /etc/ssh/sshd_config\",",
+        "    \"service sshd restart\"",
+        "  ],",
+        "  \"cheh\": [",
+        "    {",
+        "      \"content\": \"@echo off\\n\\nif NOT \\\"%PKGVER%\\\" == \\\"\\\" goto :DONE\\n\\n  rem Desired Python version...\\n  rem https://github.com/winpython/winpython/releases/tag/7.5.20240410final\\n  rem Tested with 3.12\\n  rem\\n  set PKGVER=64-31230\\n  rem\\n  rem Install to possible locations:\\n  rem\\n  rem %USERPROFILE%\\\\WPy%PKGVER%\\n  rem %~dp0%\\\\WPy%PKGVER%\\n  rem\\n\\n  set ENVBAT=scripts\\\\env.bat\\n  set SDIR=%~dp0\\n\\n  if NOT EXIST %USERPROFILE%\\\\WPy%PKGVER%\\\\%ENVBAT% goto :ls1p3\\n    set WPYDIR=%USERPROFILE%\\\\WPy%PKGVER%\\n    goto :ls1end\\n  :ls1p3\\n  if NOT EXIST %SDIR%WPy%PKGVER%\\\\%ENVBAT% goto :ls1p4\\n    set WPYDIR=%SDIR%WPy%PKGVER%\\n    goto :ls1end\\n  :ls1p4\\n    echo No Suitable WinPython Installation found\\n    set PKGVER=\\n    goto :DONE\\n  :ls1end\\n\\n  REM Note, this modifies HOME variable to %WPYDIR%\\\\settings\\n  call %WPYDIR%\\\\%ENVBAT%\\n:DONE\\n\\nset proxy=10.41.5.36:8080\\nREM Requires authentication\\nREM ~ set proxy=sia-lb.telekom.de:8080\\nREM ~ set http_proxy=http://%proxy%/\\nREM ~ set https_proxy=http://%proxy%/\\nREM ~ set proxy=\\nREM ~ set http_proxy=\\nREM ~ set https_proxy=\\nREM ~ set MYOTC_OPTS=-A\\n\\nset ENVBAT=\\nset SDIR=\\n\"",
+        "    },",
+        "    {",
+        "      \"yaho\": {}",
+        "    },",
+        "    \"sed -i~ -e 's/^127\\\\.0\\\\.0\\\\.1\\\\s*.*$/127.0.0.1 localhost '$(uname -n)'/' /etc/hosts\"",
+        "  ],",
+        "  \"cmd_output\": \"one two three\\n\",",
+        "  \"run_commands\": [",
+        "    \"sed -i~ -e 's/Listen 443[^0-9]*$/Listen 127.0.00.1:8443 https/' /etc/apache2/ports.conf\",",
+        "    \"sed -i~ -e 's/<change-me>/0.0.0.0/' -e 's/--ssl 127.0.0.1:443/--tls 127.0.00.1:8443/' /etc/default/sslh\",",
+        "    \"service sslh restart\"",
+        "  ],",
+        "  \"oh\": 123,",
+        "  \"yeah\": \"ABC is defined\",",
+        "  \"yeayyea\": \"HOME is defined\"",
+        "}"
+    ],
+    "err": [
+        ""
+    ],
+    "md5": null
+}

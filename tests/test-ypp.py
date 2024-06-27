@@ -22,7 +22,7 @@ def run_ypp(args:str) -> tuple[int,str,str]:
 
   sys.stderr.write(cmd+' : ')
   outpath = os.path.join(ypplib_dir, output_txt)
-  
+
   if os.path.isfile(outpath): os.unlink(outpath)
   rc = subprocess.run(cmd,
                       capture_output=True,
@@ -45,7 +45,7 @@ def differ(seg:str, a:list[str], b:list[str], fp:typing.TextIO) -> int:
   sa = '\n'.join(a)
   sb = '\n'.join(b)
   if sa == sb: return 0
-  
+
   fp.write(f'{seg} differs\n')
   diff = difflib.unified_diff(sa.splitlines(keepends=True),
                               sb.splitlines(keepends=True),
@@ -61,21 +61,22 @@ def run_cmd(args:list[str]) -> None:
       rc, out, err, md5 = run_ypp(yppcmd)
       print(json.dumps({'args': yppcmd, 'rc': rc, 'out': out, 'err': err, 'md5': md5}, indent=4))
     case 'test':
-      with open(args[1]) as fp:
-        jsdat = json.load(fp)
-      if not 'md5' in jsdat: jsdat['md5'] = None
+      diff = 0
+      for testcase in args[1:]:
+        with open(testcase) as fp:
+          jsdat = json.load(fp)
+        if not 'md5' in jsdat: jsdat['md5'] = None
 
-      diff = 0 
-      rc, out, err, md5 = run_ypp(jsdat['args'])
+        rc, out, err, md5 = run_ypp(jsdat['args'])
 
-      if rc != jsdat['rc']:
-        diff += 1
-        sys.stderr.write(f'Return code was {rc}.  Expected {jsdat['rc']}\n')
-      diff += differ('out', out, jsdat['out'], sys.stderr)
-      diff += differ('err', err, jsdat['err'], sys.stderr)
-      if (str(md5) != str(jsdat['md5'])):
-        diff += 1
-        sys.stderr.write(f'MD5 was {md5}.  Expected {jsdat['md5']}\n')
+        if rc != jsdat['rc']:
+          diff += 1
+          sys.stderr.write(f'Return code was {rc}.  Expected {jsdat['rc']}\n')
+        diff += differ('out', out, jsdat['out'], sys.stderr)
+        diff += differ('err', err, jsdat['err'], sys.stderr)
+        if (str(md5) != str(jsdat['md5'])):
+          diff += 1
+          sys.stderr.write(f'MD5 was {md5}.  Expected {jsdat['md5']}\n')
       sys.exit(0 if diff == 0 else 1)
     case _:
       print(args)

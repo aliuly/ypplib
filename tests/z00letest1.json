@@ -1,0 +1,12 @@
+{
+    "args": "-Idata/snippets --json=2 data/letest.yaml",
+    "rc": 1,
+    "out": [
+        ""
+    ],
+    "err": [
+        "\"data/letest.yaml\",2: Must define SID with -DSID=xyz",
+        ""
+    ],
+    "md5": null
+}

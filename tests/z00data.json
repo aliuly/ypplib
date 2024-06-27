@@ -1,0 +1,13 @@
+{
+    "args": "data/xx.yaml",
+    "rc": 0,
+    "out": [
+        "- sed -i~ -e 's/^127\\.0\\.0\\.1\\s*.*$/127.0.0.1 localhost '$(uname -n)'/' /etc/hosts",
+        "for i in $(resolvectl status | grep Link | cut -d\"(\" -f2 | cut -d\")\" -f1) ; do resolvectl domain $i INTDOMAIN ; done",
+        ""
+    ],
+    "err": [
+        ""
+    ],
+    "md5": null
+}

@@ -11,6 +11,7 @@ ypplib |release|
    README
    cli
    apidocs/index
+   notes
 
 
 Indices and tables
