@@ -25,13 +25,21 @@ if '__file__' in globals():
   sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import ypp
 
+COMPACT = -1
+
 def cmd_cli():
   ''' Command Line Interface argument parser '''
   cli = ArgumentParser(prog='ypp',description='YAML file pre-processor')
   cli.add_argument('-D','--define', help='Add constant', action='append', default=[])
   cli.add_argument('-I','--include', help='Add Include path', action='append', default=[])
   cli.add_argument('-C','--config', help='Read configuration file', action='append', default=[])
-  cli.add_argument('-J','--json', help='Parse YAML and dump JSON',action='store_true')
+  # ~ cli.add_argument('-J','--json', help='Parse YAML and dump JSON',action='store_true')
+  cli.add_argument('-J','--json', help='Parse YAML and dump JSON',
+                    action='store',
+                    default=None,     # do not generate JSON
+                    const=COMPACT,    # indent=None, most compact representation
+                    type=int,
+                    nargs='?')
   cli.add_argument('-V','--version', action='version', version='%(prog)s '+ ypp.VERSION)
 
   cli.add_argument('-o','--output', help='Save output to the given file', default=None)
@@ -59,17 +67,19 @@ def load_yaml(text:str|typing.TextIO) -> any:
     sys.exit(1)
   return res
 
+def generate_output(outfp:typing.TextIO, res:any, js:int|None) -> None:
+  if js is None:
+    outfp.write(yaml.dump(res))
+  else:
+    outfp.write(json.dumps(res, indent = None if js == COMPACT else js))
 
-###################################################################
-#
-# Main command line
-#
-###################################################################
-
-if __name__ == '__main__':
-
+def main(xargs:list[str]) -> None:
   cli = cmd_cli()
-  args = cli.parse_args()
+  if '--json' in xargs:
+    # I don't know a better way to handle this!
+    i = xargs.index('--json')
+    xargs[i] = f'--json={COMPACT}'
+  args = cli.parse_args(xargs)
 
   if args.unix and args.windows:
     sys.stderr.write('Options --unix and --windows are mutually exclusive\n')
@@ -90,33 +100,36 @@ if __name__ == '__main__':
   if args.no_pp:
     if len(args.file) == 0:
       res = load_yaml(sys.stdin)
-      if args.json:
-        outfp.write(json.dumps(res))
-      else:
-        outfp.write(yaml.dump(res))
+      generate_output(outfp, res, args.json)
     else:
       for input_file in args.file:
         with open(input_file, 'r') as fp:
           res = load_yaml(fp)
-          if args.json:
-            outfp.write(json.dumps(res))
-          else:
-            outfp.write(yaml.dump(res))
+          generate_output(outfp, res, args.json)
   else:
     ypp.init(args.config, args.include, args.define, {}, '')
     if len(args.file) == 0:
-      txt = ypp.process(sys.stdin)
-      if args.json:
+      txt = ypp.process(sys.stdin)      
+      if not args.json is None:
         res = load_yaml(txt)
-        outfp.write(json.dumps(res))
+        generate_output(outfp, res, args.json)
       else:
         outfp.write(txt)
     else:
       for input_file in args.file:
         txt = ypp.process(input_file)
-        if args.json:
+        if not args.json is None:
           res = load_yaml(txt)
-          outfp.write(json.dumps(res))
+          generate_output(outfp, res, args.json)
         else:
           outfp.write(txt)
+  
 
+###################################################################
+#
+# Main command line
+#
+###################################################################
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
