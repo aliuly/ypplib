@@ -5,6 +5,7 @@ name: shpinx doc generation
 # - Left pane, navigate to "Pages"
 # - Enable GitHub Pages
 # - Build and deployment : Source : GitHub Actions
+# - Push this workflow to github and watch it run...
 #
 
 on:
