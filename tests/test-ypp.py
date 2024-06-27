@@ -29,7 +29,7 @@ def run_ypp(args:str) -> tuple[int,str,str]:
                       text=True,
                       shell=True,
                       cwd = ypplib_dir)
-  sys.stderr.write(f' {rc.returncode}\n')
+  sys.stderr.write(' {returncode}\n'.format(returncode=rc.returncode))
   if os.path.isfile(outpath):
     with open(outpath,'rb') as fp:
       hasher = hashlib.md5()
@@ -71,16 +71,17 @@ def run_cmd(args:list[str]) -> None:
 
         if rc != jsdat['rc']:
           diff += 1
-          sys.stderr.write(f'Return code was {rc}.  Expected {jsdat['rc']}\n')
+          sys.stderr.write('Return code was {rc}.  Expected {jsrc}\n'.format(
+                            rc = rc, jsrc=jsdat['rc']))
         diff += differ('out', out, jsdat['out'], sys.stderr)
         diff += differ('err', err, jsdat['err'], sys.stderr)
         if (str(md5) != str(jsdat['md5'])):
           diff += 1
-          sys.stderr.write(f'MD5 was {md5}.  Expected {jsdat['md5']}\n')
+          sys.stderr.write('MD5 was {md5}.  Expected {jsmd5}\n'.format(
+                            md5 = md5, jsmd5 = jsdat['md5']))
       sys.exit(0 if diff == 0 else 1)
     case _:
       print(args)
-
 
 if __name__ == '__main__':
   run_cmd(sys.argv[1:])
