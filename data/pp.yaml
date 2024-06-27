@@ -13,12 +13,17 @@ cheh:
 - yaho: {}
 - sed -i~ -e 's/^127\.0\.0\.1\s*.*$/127.0.0.1 localhost '$$(uname -n)'/' /etc/hosts
 
-base64: |
-  #include --bin vars.bat
 cmd_output: |
-  #exec ls -l
+  #exec echo one two three
 run_commands:
   #include sslh.yaml
 oh: $<ABC>
-home: $<HOME>
-shell: $<SHELL>
+
+#ifdef ABC
+yeah: ABC is defined
+#ifdef HOME
+yeayyea: HOME is defined
+#endif
+#else
+yeah: ABC is NOT defined
+#endif

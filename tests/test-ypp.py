@@ -1,83 +1,86 @@
 #!python3
+import difflib
 import hashlib
+import json
 import os
+import platform
 import re
 import shlex
 import subprocess
 import sys
-import yaml
+import typing
 
 ypplib_dir = os.path.join(os.path.dirname(__file__),'..')
+output_txt = 'output.txt'
 
 def remove_passwds(src:str) -> str:
-  return re.sub(r'(\$[0-9]\$)[a-zA-Z0-9+/.]+\$[a-zA-Z0-9+/.]+','\1___$',src)
+  return re.sub(r'(\$[0-9]\$)[a-zA-Z0-9+/.]+\$[a-zA-Z0-9+/.]+',r'\1___$_________',src)
 
 def run_ypp(args:str) -> tuple[int,str,str]:
-  cmd = './py -m ypp '
+  cmd = 'py -m ypp ' if platform.system() == 'Windows' else './py -m ypp '
   cmd += args
 
-
   sys.stderr.write(cmd+' : ')
-  if '--json' in cmd:
-    cmd += '| jq .'
+  outpath = os.path.join(ypplib_dir, output_txt)
+  
+  if os.path.isfile(outpath): os.unlink(outpath)
   rc = subprocess.run(cmd,
                       capture_output=True,
                       text=True,
                       shell=True,
                       cwd = ypplib_dir)
   sys.stderr.write(f' {rc.returncode}\n')
+  if os.path.isfile(outpath):
+    with open(outpath,'rb') as fp:
+      hasher = hashlib.md5()
+      hasher.update(fp.read())
+      md5 = hasher.hexdigest()
+    os.unlink(outpath)
+  else:
+    md5 = None
 
-  return [ args, rc.returncode, remove_passwds(rc.stdout).split('\n'), rc.stderr.split('\n') ]
+  return  rc.returncode, remove_passwds(rc.stdout).split('\n'), rc.stderr.split('\n'), md5
 
+def differ(seg:str, a:list[str], b:list[str], fp:typing.TextIO) -> int:
+  sa = '\n'.join(a)
+  sb = '\n'.join(b)
+  if sa == sb: return 0
+  
+  fp.write(f'{seg} differs\n')
+  diff = difflib.unified_diff(sa.splitlines(keepends=True),
+                              sb.splitlines(keepends=True),
+                              n=0)
+  fp.writelines(diff)
+  return 1
 
-cmd_list = [
-  '-h',
-  '-Idata/snippets --json data/demo2.yaml',
-  '-Idata/snippets data/letest.yaml',
-  '-DSID=sys1 -Idata/snippets --json data/letest.yaml',
-  'data/xx.yaml',
-  '-Idata/snippets -DSID=tsv2 --json data/ts-v2.yaml',
-  '-DUSE_ACME -DSID=sys1 -Idata/snippets --json data/letest.yaml',
-  '-Idata/snippets -DUSE_ACME -DSID=tsv2 --json data/ts-v2.yaml',
-]
+def run_cmd(args:list[str]) -> None:
+  match args[0]:
+    case 'run':
+      # Run test case
+      yppcmd = shlex.join(args[1:])
+      rc, out, err, md5 = run_ypp(yppcmd)
+      print(json.dumps({'args': yppcmd, 'rc': rc, 'out': out, 'err': err, 'md5': md5}, indent=4))
+    case 'test':
+      with open(args[1]) as fp:
+        jsdat = json.load(fp)
+      if not 'md5' in jsdat: jsdat['md5'] = None
 
-def generate_output():
-  gen = []
-  for cmd in cmd_list:
-    gen.append(run_ypp(cmd))
+      diff = 0 
+      rc, out, err, md5 = run_ypp(jsdat['args'])
 
-  return gen
+      if rc != jsdat['rc']:
+        diff += 1
+        sys.stderr.write(f'Return code was {rc}.  Expected {jsdat['rc']}\n')
+      diff += differ('out', out, jsdat['out'], sys.stderr)
+      diff += differ('err', err, jsdat['err'], sys.stderr)
+      if (str(md5) != str(jsdat['md5'])):
+        diff += 1
+        sys.stderr.write(f'MD5 was {md5}.  Expected {jsdat['md5']}\n')
+      sys.exit(0 if diff == 0 else 1)
+    case _:
+      print(args)
 
-def compare_res(seta, setb):
-  if len(seta) != len(setb):
-    sys.stderr.write(f'Sets have different number of items len(a)={len(seta)}, len(b)={len(setb)}\n')
-    sys.exit(1)
-  i = 0
-  rc = 0
-  while i < len(seta):
-    if yaml.dump(seta[i])  != yaml.dump(setb[i]):
-      sys.stderr.write(f'Error Test#{i} ')
-      if seta[i][0] == setb[i][0]:
-        sys.stderr.write(f'"{seta[i][0]}"')
-      else:
-        sys.stderr.write(f'"{seta[i][0]}"|"{setb[i][0]}"')
-      sys.stderr.write(' FAILED\n')
-      rc += 1
-    i += 1
-  sys.exit(0 if rc == 0 else 1)
 
 if __name__ == '__main__':
-  if len(sys.argv) == 3 and sys.argv[1] == 'save':
-    res = generate_output()
-    with open(os.path.join(ypplib_dir,sys.argv[2]), 'w') as fp:
-      fp.write(yaml.dump(res))
-  elif len(sys.argv) == 3 and sys.argv[1] == 'run':
-    with open(os.path.join(ypplib_dir,sys.argv[2]), 'r') as fp:
-      saved = yaml.safe_load(fp)
-    res = generate_output()
-    sys.stderr.write('\n===\n\n')
-    compare_res(res, saved)
-  else:
-    res = generate_output()
-    sys.stderr.write('\n===\n\n')
-    print(yaml.dump(res))
+  run_cmd(sys.argv[1:])
+  # py -m ypp -Idata/snippets -Dsecrets_file=tests/data.yaml -Dkey_store=tests/data --json=2 data/demo2.yaml :  0
