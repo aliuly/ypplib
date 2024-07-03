@@ -165,7 +165,7 @@ class YamlPreProcessor(iYamlPreProcessor):
     yppi.msg(args)
     return ''
 
-  def __init__(self, config:list[str] = [], include:list[str] = [], define:list[str] = [], app_defaults:dict[str] = {}, env_prefix:str = ''):
+  def __init__(self, config:list[str] = [], include:list[str] = [], define:list[str] = [], app_defaults:dict[str] = {}, env_prefix:str|None = ''):
     '''Initialize pre-processor data
 
     :param config: List of config yaml files to read
@@ -209,11 +209,12 @@ class YamlPreProcessor(iYamlPreProcessor):
       cfgfile.load(cfg_file, self)
 
     # Initialize from environment variables
-    prefix_len = len(env_prefix)
-    for key,val in os.environ.items():
-      if key.startswith(env_prefix):
-        self.ppv[key[prefix_len:]] = val
-    del prefix_len
+    if not env_prefix is None:
+      prefix_len = len(env_prefix)
+      for key,val in os.environ.items():
+        if key.startswith(env_prefix):
+          self.ppv[key[prefix_len:]] = val
+      del prefix_len
 
     # Update include path
     if not STR.INCLUDE_PATH in self.ppv: self.ppv[STR.INCLUDE_PATH] = ''

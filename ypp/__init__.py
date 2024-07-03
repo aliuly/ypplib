@@ -137,3 +137,21 @@ def define_var(key:str, value:str, var_expand = False) -> None:
   '''
   if len(default_vars) == 0: raise RuntimeError
   default_vars[VERSION].define_var(key, value, var_expand)
+
+def register_cb(self, directive:str, callback:typing.Callable, expand_vars:bool = True) -> None:
+  '''Register a pre-processor directive callback
+  :param directive: directive to register
+  :param callback: Function to call when executing this pre-processor directive
+  :param expand_vars: If `True` passed arguments will be check for variable expansions before calling function.  `False` variable expansions can be omitted.
+  '''
+  if len(default_vars) == 0: raise RuntimeError
+  default_vars[VERSION].register_cb(directive, callback, expand_vars)
+
+def register_macro(self, macro:str, callback:typing.Callable, expand_vars:bool = True, ex_data:any = None) -> None:
+  '''Register a macro callback
+  :param macro: macro to register
+  :param callback: Function to call when executing this macro
+  :param expand_vars: If `True` passed arguments will be check for variable expansions before calling function.  `False` variable expansions can be omitted.
+  '''
+  if len(default_vars) == 0: raise RuntimeError
+  default_vars[VERSION].register_macro(directive, callback, expand_vars)
