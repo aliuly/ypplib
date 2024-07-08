@@ -6,12 +6,19 @@ This is a module to do password hash manipulations
 import os
 import random
 import string
+import sys
+import typing
 import yaml
 
 try:
   from passlib.hash import md5_crypt, sha256_crypt, sha512_crypt
 except ImportError:
   pass
+
+try:
+  from icecream import ic
+except ImportError:  # Graceful fallback if IceCream isn't installed.
+  ic = lambda *a: None if not a else (a[0] if len(a) == 1 else a)  # noqa
 
 from d3des import encrypt as d3des
 from ipp import STR, iYamlPreProcessor
@@ -239,6 +246,85 @@ def register(yppi:iYamlPreProcessor) -> None:
   yppi.register_macro('pwgen', macro_pwgen)
   yppi.register_macro('rndstr', macro_randstr)
 
+
+def util(fp:typing.TextIO, defs:list[str]) -> None:
+  '''Implements a CLI utility for encoding passwords
+
+  :param fp: Output file pointer
+  :param defs: Passed arguments using `-D` options.
+
+  Implements the command line option `--pwhash` to generate
+  password hashes.  It accepts the following command line
+  options:
+
+  - `-Denc=md5|sha256|sha512|vnc` : Set the encoding mode
+  - `-Dpass=plaintext` : Specify the password to encode.
+    If not provided, it will prompt on the screen or read
+    from standard input.
+  - `-o output` : Save the hash to the `output` file, if not specified
+    saves to standard output.
+  '''
+  enc = TEXT
+  pwd = None
+
+  for i in defs:
+    if i.startswith('enc='):
+      if i[4:].upper() in HASH_STR:
+        enc = HASH_STR[i[4:].upper()]
+      else:
+        sys.stderr.write(f'Invalid encoding {i}\n')
+        exit(2)
+    elif i.startswith('pass='):
+      pwd = i[5:]
+    else:
+      sys.stderr.write(f'Option -D{i} ignored\n')
+      continue
+  if pwd is None: pwd = input('Enter password: ')
+
+  fp.write(enc_passwd(pwd, enc))
+  fp.write('\n')
+
+def randutil(fp:typing.TextIO, defs:list[str]) -> None:
+  '''Implements a CLI utility for generating random strings
+
+  :param fp: Output file pointer
+  :param defs: Passed arguments using `-D` options.
+
+  Implements the command line option `--rnd` to generate
+  random strings.  It accepts the following command line
+  options:
+
+  - `-Dlen=num`: generate `num` characters.  Defaults to 16.
+  - `-Dchrset=xxx`: Specify the character set to use for generating
+     random strings.  The following special cases are recognized:
+     - `-Dchrset=digits` : DigitsFi (numbers from 0 to 9)
+     - `D-chrset=upper` : Upper case characters
+     - `D-chrset=lower` : Lower case characters
+  - `-Dchrset` can be specified multiple times and it will be added
+    to the chrset.
+  - `-o output` : Save the string the `output` file, if not specified
+    saves to standard output.
+  '''
+  chrset = ''
+  slen = DEF_PWLEN
+  for i in defs:
+    if i.startswith('len='):
+      slen = int(i[4:])
+      continue
+    if not i.startswith('chrset='):
+      sys.stderr.write(f'Option -D{i} ignored\n')
+      continue
+    if i.lower() == 'chrset=digits':
+      chrset += string.digits
+    elif i.lower() == 'chrset=upper':
+      chrset += string.ascii_uppercase
+    elif i.lower() == 'chrset=lower':
+      chrset += string.ascii_lowercase
+    else:
+      chrset += i[7:]
+  if chrset == '': chrset = string.digits + string.ascii_uppercase + string.ascii_lowercase
+  fp.write(gen_rand(slen,chrset))
+  fp.write('\n')
 
 if __name__ == '__main__':
   import doctest

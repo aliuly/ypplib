@@ -24,16 +24,18 @@ except ImportError:  # Graceful fallback if IceCream isn't installed.
 if '__file__' in globals():
   sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 import ypp
+import ypp.pwhash
 
 COMPACT = -1
+R_PWHASH = 'pwhash'
+R_GENRAND = 'rnd'
 
 def cmd_cli():
   ''' Command Line Interface argument parser '''
   cli = ArgumentParser(prog='ypp',description='YAML file pre-processor')
+  cli.add_argument('-C','--config', help='Read configuration file', action='append', default=[])
   cli.add_argument('-D','--define', help='Add constant', action='append', default=[])
   cli.add_argument('-I','--include', help='Add Include path', action='append', default=[])
-  cli.add_argument('-C','--config', help='Read configuration file', action='append', default=[])
-  # ~ cli.add_argument('-J','--json', help='Parse YAML and dump JSON',action='store_true')
   cli.add_argument('-J','--json', help='Parse YAML and dump JSON',
                     action='store',
                     default=None,     # do not generate JSON
@@ -42,10 +44,20 @@ def cmd_cli():
                     nargs='?')
   cli.add_argument('-V','--version', action='version', version='%(prog)s '+ ypp.VERSION)
 
-  cli.add_argument('-o','--output', help='Save output to the given file', default=None)
   cli.add_argument('-n','--no-pp', help='Disable pre-processor',action='store_true')
+  cli.add_argument('-o','--output', help='Save output to the given file', default=None)
   cli.add_argument('--unix', help='Force UNIX mode output', action='store_true')
   cli.add_argument('--windows', help='Force Windows mode output', action='store_true')
+
+  cli.set_defaults(rutil = None)
+  cli.add_argument('--pwhash', help='Run pwhash utility (Use -Denc=xxx, -Dpass=xxx)',
+                                dest = 'rutil',
+                                const = R_PWHASH,
+                                action='store_const')
+  cli.add_argument('--rnd', help='Generate random values (Use -Dlen=num, -Dchrset=xxx)',
+                                dest = 'rutil',
+                                const = R_GENRAND,
+                                action='store_const')
 
   cli.add_argument('file', help='YAML file to parse', nargs='*')
   return cli
@@ -97,6 +109,16 @@ def main(xargs:list[str]) -> None:
     else:
       outfp = open(args.output,'w')
 
+  if not args.rutil is None:
+    # Run utilities
+    if args.rutil == R_PWHASH:
+      ypp.pwhash.util(outfp, args.define)
+    elif args.rutil == R_GENRAND:
+      ypp.pwhash.randutil(outfp, args.define)
+    else:
+      raise NotImplementedError
+    exit()
+
   if args.no_pp:
     if len(args.file) == 0:
       res = load_yaml(sys.stdin)
@@ -109,7 +131,7 @@ def main(xargs:list[str]) -> None:
   else:
     ypp.init(args.config, args.include, args.define, {}, '')
     if len(args.file) == 0:
-      txt = ypp.process(sys.stdin)      
+      txt = ypp.process(sys.stdin)
       if not args.json is None:
         res = load_yaml(txt)
         generate_output(outfp, res, args.json)
@@ -123,7 +145,7 @@ def main(xargs:list[str]) -> None:
           generate_output(outfp, res, args.json)
         else:
           outfp.write(txt)
-  
+
 
 ###################################################################
 #
