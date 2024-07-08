@@ -50,11 +50,13 @@ def cmd_cli():
   cli.add_argument('--windows', help='Force Windows mode output', action='store_true')
 
   cli.set_defaults(rutil = None)
-  cli.add_argument('--pwhash', help='Run pwhash utility (Use -Denc=xxx, -Dpass=xxx)',
+  
+  grp1 = cli.add_argument_group('Sub command options')
+  grp1.add_argument('--pwhash', help='Run pwhash utility (Use -Denc=xxx, -Dpass=xxx)',
                                 dest = 'rutil',
                                 const = R_PWHASH,
                                 action='store_const')
-  cli.add_argument('--rnd', help='Generate random values (Use -Dlen=num, -Dchrset=xxx)',
+  grp1.add_argument('--rnd', help='Generate random values (Use -Dlen=num, -Dchrset=xxx)',
                                 dest = 'rutil',
                                 const = R_GENRAND,
                                 action='store_const')
