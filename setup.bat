@@ -17,10 +17,11 @@ if NOT "%proxy%"=="" (
 
 set VENV=%~dp0.venv
 if NOT EXIST %VENV%\Scripts\activate.bat (
-  echo Setting VENV
   if "%1"=="exe" (
+    echo Setting VENV-exe
     python.exe -m venv --system-site-packages %VENV%
   ) else (
+    echo Setting VENV-bat
     call python.bat -m venv --system-site-packages %VENV%
   )
 )
