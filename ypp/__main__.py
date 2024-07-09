@@ -27,7 +27,7 @@ import ypp
 import ypp.pwhash
 
 COMPACT = -1
-R_PWHASH = 'pwhash'
+R_PWHASH = 'cash'
 R_GENRAND = 'rnd'
 
 def cmd_cli():
@@ -52,7 +52,7 @@ def cmd_cli():
   cli.set_defaults(rutil = None)
   
   grp1 = cli.add_argument_group('Sub command options')
-  grp1.add_argument('--pwhash', help='Run pwhash utility (Use -Denc=xxx, -Dpass=xxx)',
+  grp1.add_argument('--cash', help='Run cash utility (Use -Dalgo=xxx, -Dpwd=xxx)',
                                 dest = 'rutil',
                                 const = R_PWHASH,
                                 action='store_const')
@@ -123,6 +123,7 @@ def main(xargs:list[str]) -> None:
 
   if args.no_pp:
     if len(args.file) == 0:
+      sys.stderr.write('Reading from stdin...\n')
       res = load_yaml(sys.stdin)
       generate_output(outfp, res, args.json)
     else:
@@ -133,6 +134,7 @@ def main(xargs:list[str]) -> None:
   else:
     ypp.init(args.config, args.include, args.define, {}, '')
     if len(args.file) == 0:
+      sys.stderr.write('Reading from stdin...\n')
       txt = ypp.process(sys.stdin)
       if not args.json is None:
         res = load_yaml(txt)

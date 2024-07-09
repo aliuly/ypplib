@@ -268,13 +268,13 @@ def util(fp:typing.TextIO, defs:list[str]) -> None:
   pwd = None
 
   for i in defs:
-    if i.startswith('enc='):
-      if i[4:].upper() in HASH_STR:
-        enc = HASH_STR[i[4:].upper()]
+    if i.startswith('algo='):
+      if i[5:].upper() in HASH_STR:
+        enc = HASH_STR[i[5:].upper()]
       else:
         sys.stderr.write(f'Invalid encoding {i}\n')
         exit(2)
-    elif i.startswith('pass='):
+    elif i.startswith('pwd='):
       pwd = i[5:]
     else:
       sys.stderr.write(f'Option -D{i} ignored\n')
