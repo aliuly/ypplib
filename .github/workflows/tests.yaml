@@ -25,4 +25,4 @@ jobs:
           sh tests/doctests.sh ypp
       - name: Run CLI tests
         run: |
-          ./py python3 tests/test-ypp.py test tests/z*.json
+          ./pys python3 tests/test-ypp.py test tests/z*.json
