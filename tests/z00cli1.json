@@ -3,7 +3,7 @@
     "rc": 0,
     "out": [
         "usage: ypp [-h] [-C CONFIG] [-D DEFINE] [-I INCLUDE] [-J [JSON]] [-V] [-n]",
-        "           [-o OUTPUT] [--unix] [--windows] [--pwhash] [--rnd]",
+        "           [-o OUTPUT] [--unix] [--windows] [--cash] [--rnd]",
         "           [file ...]",
         "",
         "YAML file pre-processor",
@@ -29,7 +29,7 @@
         "  --windows             Force Windows mode output",
         "",
         "Sub command options:",
-        "  --pwhash              Run pwhash utility (Use -Denc=xxx, -Dpass=xxx)",
+        "  --cash                Run cash utility (Use -Dalgo=xxx, -Dpwd=xxx)",
         "  --rnd                 Generate random values (Use -Dlen=num, -Dchrset=xxx)",
         ""
     ],

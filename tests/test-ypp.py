@@ -17,7 +17,7 @@ def remove_passwds(src:str) -> str:
   return re.sub(r'(\$[0-9]\$)[a-zA-Z0-9+/.]+\$[a-zA-Z0-9+/.]+',r'\1___$_________',src)
 
 def run_ypp(args:str) -> tuple[int,str,str]:
-  cmd = 'py -m ypp ' if platform.system() == 'Windows' else './py -m ypp '
+  cmd = 'pys -m ypp ' if platform.system() == 'Windows' else './pys -m ypp '
   cmd += args
 
   sys.stderr.write(cmd+' : ')

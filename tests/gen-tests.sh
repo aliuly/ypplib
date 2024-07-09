@@ -7,8 +7,8 @@ set -euf
 
 mydir=$(dirname $(readlink -f "$0"))
 export PYTHONPATH="$mydir/.."
-ypp_cmd="$mydir/../py -m ypp"
-test_cmd="$mydir/../py test-ypp.py"
+ypp_cmd="$mydir/../pys -m ypp"
+test_cmd="$mydir/../pys test-ypp.py"
 
 (
   echo "Generating test credentials"
