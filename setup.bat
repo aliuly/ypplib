@@ -1,18 +1,36 @@
-@echo off
+REM ~ @echo off
 setlocal
-call %~dp0%vars.bat
 
-if "%proxy%"=="" (
-  set proxy=
+if EXIST %~dp0%env.bat (
+  call %~dp0%env.bat 
+)
+if EXIST %~dp0%..\env.bat (
+  call %~dp0%..\env.bat
+)
+if NOT "%proxy%"=="" (
+  set http_proxy=http://%proxy%/
+  set https_proxy=http://%proxy%/
+  set pipproxy=--proxy=%proxy%
 ) else (
-  echo Using proxy %proxy%
-  set proxy=--proxy=%proxy%
+  set pipproxy=
 )
 
-REM ~ pip install %proxy% --only-binary=netifaces python-openstackclient
-REM ~ pip install %proxy% otcextensions
+set VENV=%~dp0.venv
+if NOT EXIST %VENV%\Scripts\activate.bat (
+  echo Setting VENV
+  if "%1"=="exe" (
+    python.exe -m venv --system-site-packages %VENV%
+  ) else (
+    call python.bat -m venv --system-site-packages %VENV%
+  )
+)
+call %VENV%\Scripts\activate.bat
 
-pip install %proxy% --requirement %~dp0%requirements.txt
+pip install %pipproxy% --requirement %~dp0%requirements.txt
 
-REM these dependancies are Windows specific
-pip install %proxy% pyinstaller
+if "%1"=="exe" (
+  pip install %pipproxy% pyinstaller
+) else (
+  pip install %pipproxy% icecream
+  pip install %pipproxy% pyinstaller
+)

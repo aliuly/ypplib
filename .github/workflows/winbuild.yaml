@@ -24,8 +24,7 @@ jobs:
           python scripts/gitver.py ypp/version.py
       - name: Install dependencies
         run: |
-          del vars.bat
-          .\setup.bat
+          .\setup.bat exe
       - name: Package EXEs
         run: |
           .\mk.bat

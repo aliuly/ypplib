@@ -1,21 +1,4 @@
-#
-# Requirements
-#
-# pip install %proxy% --only-binary=netifaces python-openstackclient
-# pip install %proxy% otcextensions
-# pip install %proxy% pyinstaller
-
-# debugging
-icecream
-
-# doc generation
-docutils
-sphinx
-myst-parser
-sphinx-autodoc2
-sphinx-argparse
-
-# crypt
---only-binary=cryptography
+# --only-binary=cryptography
 cryptography
 passlib
+pyyaml
